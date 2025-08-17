@@ -29,8 +29,8 @@ class LeafNode(HTMLNode):
 
     
     def to_html(self):
-        if not self.value:
-            raise ValueError()
+        if self.value is None:  # Only check for None, not empty string
+            raise ValueError("invalid HTML: no value")
         elif self.tag is None:
             return self.value
         else:
@@ -39,19 +39,20 @@ class LeafNode(HTMLNode):
         
 
 
+
 class ParentNode(HTMLNode):
     def __init__(self,tag,children,props=None):
         super().__init__(tag=tag, value=None, children=children, props=props)
 
     def to_html(self):
-        if not self.tag:
-            raise ValueError() 
-        elif not self.children:
-            raise ValueError('you are a virgin so you got no kids') 
+        if self.tag is None:
+            raise ValueError("invalid HTML: no tag")
+        elif self.children is None:
+            raise ValueError("invalid HTML: no children")
         
         attrs = self.props_to_html()
         
-
+        #iterativly
         html_string = []
         for child in self.children:
             html_string.append(child.to_html())
@@ -64,3 +65,4 @@ class ParentNode(HTMLNode):
         
         # # Wrap children with parent tag and return
         # return f"<{self.tag}{attrs}>{children_html}</{self.tag}>"
+
