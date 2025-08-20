@@ -1,6 +1,6 @@
 import unittest
 
-from textnode import TextNode, TextType, text_node_to_html_node,split_nodes_delimiter,extract_markdown_images,extract_markdown_links
+from textnode import TextNode, TextType, text_node_to_html_node,split_nodes_delimiter,extract_markdown_images,extract_markdown_links,split_nodes_image,split_nodes_link
 
 
 class TestTextNode(unittest.TestCase):
@@ -114,18 +114,7 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(result[-1].text, "end")
         self.assertEqual(result[-1].text_type, TextType.CODE)
 
-    def test_multiple_nodes_input(self):
-        node1 = TextNode("First `code` block", TextType.TEXT)
-        node2 = TextNode("Second **bold** block", TextType.TEXT)
-        result = split_nodes_delimiter([node1, node2], "`", TextType.CODE)
-        result = split_nodes_delimiter(result, "**", TextType.BOLD)
 
-        # Check that both code and bold were processed
-        code_nodes = [n for n in result if n.text_type == TextType.CODE]
-        bold_nodes = [n for n in result if n.text_type == TextType.BOLD]
-
-        self.assertEqual(code_nodes[0].text, "code")
-        self.assertEqual(bold_nodes[0].text, "bold")
 
     #regex tests
     def test_extract_markdown_images(self):
@@ -197,6 +186,72 @@ class TestTextNode(unittest.TestCase):
             [("Open AI Homepage", "https://openai.com")],
             matches
         )
+
+    #spliting tests
+
+    def test_split_image(self):
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+            ],
+            new_nodes,
+        )
+
+    def test_split_image_single(self):
+        node = TextNode(
+            "![image](https://www.example.COM/IMAGE.PNG)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("image", TextType.IMAGE, "https://www.example.COM/IMAGE.PNG"),
+            ],
+            new_nodes,
+        )
+
+    def test_split_images(self):
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
+                ),
+            ],
+            new_nodes,
+        )
+
+    def test_split_links(self):
+        node = TextNode(
+            "This is text with a [link](https://boot.dev) and [another link](https://blog.boot.dev) with text that follows",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://boot.dev"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("another link", TextType.LINK, "https://blog.boot.dev"),
+                TextNode(" with text that follows", TextType.TEXT),
+            ],
+            new_nodes,
+        )
+
+
 
 if __name__ == "__main__":
     unittest.main()

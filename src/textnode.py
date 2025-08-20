@@ -66,7 +66,8 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             else:
                 raise Exception("delimiters did not properly match.")
 
-    return new_nodes_list
+        return new_nodes_list
+
 
 
 
@@ -79,30 +80,78 @@ def extract_markdown_links(text):
 
 
 
-
-
 def split_nodes_image(old_nodes):
-    pass 
+    new_node_list = []
+    for node in old_nodes:
+        if node.text_type == TextType.IMAGE:
+            new_node_list.append(node)
+            continue
+        else:
+            if node.text_type == TextType.TEXT:
+                imagelink = extract_markdown_images(node.text)
+                if len(imagelink) == 0:
+                    new_node_list.append(node)
+                    continue
+                else:
+                    current_text = node.text
+                    for i, (img,link) in enumerate(imagelink):
+                        name = f'![{img}]'
+                        lin = f'({link})'
+                        parts = current_text.split(name+lin,1)
 
+                        before = parts[0]
+                        after = parts[1]
+
+
+                        if before:
+                            new_node_list.append(TextNode(before,TextType.TEXT))
+
+                        new_node_list.append(TextNode(img,TextType.IMAGE,link))
+
+                        current_text = after
+                    if current_text:
+                        new_node_list.append(TextNode(current_text,TextType.TEXT))
+
+    return new_node_list
+          
 
 
 def split_nodes_link(old_nodes):
     #1. i need to split the text 
     new_nodes_list = []
     for node in old_nodes:
-        if node.text_type:
-            text = extract_markdown_links(node.text)
-            parts = node.text.split('[{text[0][0]}]({text[0][1]})',1)
 
-    print(parts)
+        if node.text_type != TextType.TEXT:
+            new_nodes_list.append(node)
+            continue
+        else:   
+            link = extract_markdown_links(node.text)
+        
+            if len(link) == 0:
+                new_nodes_list.append(node) 
+                continue
+            else:
+                current_text  = node.text 
+                for i,(alt,lin) in enumerate(link):
+                    l = f'({lin})'
+                    m = f'[{alt}]'
+                    parts = current_text.split(m+l,1)
+                    
+                    before = parts[0]
+                    after = parts[1]
+                    
+                    if before != '':
+                        new_nodes_list.append(TextNode(before, TextType.TEXT))
+                    new_nodes_list.append(TextNode(alt, TextType.LINK, lin))
 
+                    # carry "after" forward for the next iteration
+                    current_text = after
 
-    # print(f'[{text[0][0]}]({text[0][1]})')
-    # print(parts)
-            
-#[to youtube](https://www.youtube.com/@bootdotdev)
-node = TextNode(
-    "This is text with a link [to boot dev](https://www.boot.dev) and some more words",
-    TextType.TEXT,)
+                # once loop finishes, whatever's left is plain text
+                if current_text != '':
+                   new_nodes_list.append(TextNode(current_text, TextType.TEXT))
 
-split_nodes_link([node])
+    return new_nodes_list
+
+    
+
