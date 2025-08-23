@@ -157,5 +157,29 @@ def text_to_textnodes(text):
     return textnodes
 
 
-text = 'This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)'
-print(text_to_textnodes(text))
+def markdown_to_blocks(markdown):
+    parts = markdown.split("\n\n")  # Split the markdown by double newlines
+    blocks = []
+    
+    for part in parts:
+        stripped_block = part.strip()  # Remove whitespace at the start/end of the block
+
+        if stripped_block:  # Only continue if the block is not empty
+            # Split the block into individual lines
+            lines = stripped_block.split("\n")
+            cleaned_lines = []
+         
+
+            # Strip each line of leading/trailing spaces
+            for line in lines:
+                cleaned_line = line.strip()
+                cleaned_lines.append(cleaned_line)
+            
+
+            # Join the cleaned lines back into one block
+            final_block = "\n".join(cleaned_lines)
+            blocks.append(final_block)
+    
+    return blocks
+
+    
