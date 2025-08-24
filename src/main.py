@@ -1,10 +1,11 @@
 import shutil
 import os
 from genarate import generate_page,generate_pages_recursive
+import sys
 
 #delete all the contents of the destination directory (public) to ensure that the copy is clean.
 #--------------------------------------------------------------------------------------------- 
-destination_path = "public" # Replace with the actual path to your directory
+destination_path = "docs" # Replace with the actual path to your directory
 source_path = "static"
 
 def delete_all_the_contents_in_the_directory(destination_path):
@@ -32,12 +33,16 @@ def copy_all_the_contents_in_a_directory(source_path,destination_path):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+base_path = sys.argv[1] if len(sys.argv) > 1 else "/"
+
+
 
 def main():
     delete_all_the_contents_in_the_directory(destination_path)
     copy_all_the_contents_in_a_directory(source_path,destination_path)
-    generate_pages_recursive('content', 'template.html', 'public')
+    generate_pages_recursive('content', 'template.html', 'docs',base_path)
 
 
 
 main()
+
