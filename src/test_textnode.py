@@ -3,7 +3,7 @@ import unittest
 from textnode import (TextNode, TextType, text_node_to_html_node,split_nodes_delimiter,extract_markdown_images,
 extract_markdown_links,split_nodes_image,split_nodes_link,text_to_textnodes,markdown_to_blocks)
 
-from markdown import markdown_to_html_node
+from markdown import markdown_to_html_node,extract_title
 
 from block_type import BlockType,block_to_block_type
 
@@ -458,5 +458,40 @@ class TestTextNode(unittest.TestCase):
             "<li>Third item with <b>bold</b> and <i>italic</i></li>"
             "</ol></div>"
         )
-if __name__ == "__main__":
+
+    #extracting header title from a markdown test
+    def test_header_working(self):
+        md = """
+        # Heading 
+        ## Heading 2
+        """
+        title = extract_title(md)
+        expect = 'Heading'
+        self.assertEqual(title,expect)
+
+    def test_header_not_working(self):
+        md = """
+        # Heading 
+        ## Heading 2
+        """
+        title = extract_title(md)
+        expect = 'Headings'
+        self.assertNotEqual(title,expect)
+
+    def test_single_line_header(self):
+        md = "# Hello"
+        self.assertEqual(extract_title(md), "Hello")
+
+
+    def test_header_with_spaces(self):
+        md = "   #   Hello World   "
+        self.assertEqual(extract_title(md), "Hello World")
+
+
+    def test_first_header_only(self):
+        md = "# First\n# Second"
+        self.assertEqual(extract_title(md), "First")
+
+
+if __name__ == "__main__":  
     unittest.main()

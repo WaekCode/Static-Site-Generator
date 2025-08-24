@@ -84,11 +84,11 @@ def markdown_to_html_node(markdown):
 
 
 
-md = """
-# Heading 1
-## Heading 2
-"""
 
-node = markdown_to_html_node(md)
-html = node.to_html()
-print(html)
+def extract_title(markdown):
+    for line in markdown.split('\n'):
+        line = line.strip()          
+        if line.startswith('# '):
+            return line[1:].strip()
+        
+    raise Exception('no header 1')
